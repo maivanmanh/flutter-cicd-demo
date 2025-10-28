@@ -1,0 +1,75 @@
+name: Flutter CI/CD - Build APK & Web, Deploy to Firebase
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      # 1️⃣ Checkout your repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Setup Flutter 3.35.6
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.6'
+
+      # 3️⃣ Cache dependencies for faster builds
+      - name: Cache Flutter pub packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      # 4️⃣ Install dependencies
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 5️⃣ Code analysis
+      - name: Analyze project
+        run: flutter analyze
+
+      # 6️⃣ Unit tests
+      - name: Run tests
+        run: flutter test --no-pub
+
+      # 7️⃣ Build Android APK
+      - name: Build Android release APK
+        run: flutter build apk --release
+
+      # 8️⃣ Upload APK artifact
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-apk-release
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+      # 9️⃣ Build Flutter Web release
+      - name: Build Flutter Web
+        run: flutter build web --release --base-href="/"
+
+      # 🔟 Upload Web build as artifact
+      - name: Upload Web build
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-web-release
+          path: build/web
+
+      # # 1️⃣1️⃣ Deploy to Firebase Hosting
+      # - name: Deploy to Firebase Hosting
+      #   uses: FirebaseExtended/action-hosting-deploy@v0
+      #   with:
+      #     repoToken: ${{ secrets.GITHUB_TOKEN }}
+      #     firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      #     channelId: live     # use "preview" for PR previews
+      #     projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
