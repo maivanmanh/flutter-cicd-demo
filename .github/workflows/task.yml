@@ -1,4 +1,4 @@
-name: Flutter CI/CD - Build APK & Web, Deploy to Firebase
+name: Flutter CI/CD - Fast Build & Deploy to Firebase
 
 on:
   push:
@@ -12,18 +12,28 @@ jobs:
     timeout-minutes: 35
 
     steps:
-      # 1️⃣ Checkout your repository
+      # 1️⃣ Checkout source code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Setup Flutter 3.35.6
+      # 2️⃣ Cache Flutter SDK
+      - name: Cache Flutter SDK
+        uses: actions/cache@v4
+        with:
+          path: /opt/hostedtoolcache/flutter
+          key: ${{ runner.os }}-flutter-sdk-${{ hashFiles('pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-sdk-
+
+      # 3️⃣ Setup Flutter (3.35.6)
       - name: Setup Flutter SDK
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.35.6'
+          cache: true
 
-      # 3️⃣ Cache dependencies for faster builds
-      - name: Cache Flutter pub packages
+      # 4️⃣ Cache Flutter pub packages
+      - name: Cache Flutter pub cache
         uses: actions/cache@v4
         with:
           path: ~/.pub-cache
@@ -31,45 +41,77 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pub-
 
-      # 4️⃣ Install dependencies
+      # 5️⃣ Cache Gradle dependencies
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # 6️⃣ Cache Flutter build intermediates
+      - name: Cache Flutter build
+        uses: actions/cache@v4
+        with:
+          path: |
+            build
+            .dart_tool
+          key: ${{ runner.os }}-flutter-build-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-build-
+
+      # 7️⃣ Install dependencies
       - name: Install dependencies
         run: flutter pub get
 
-      # 5️⃣ Code analysis
+      # 8️⃣ Code analysis
       - name: Analyze project
         run: flutter analyze
 
-      # 6️⃣ Unit tests
+      # 9️⃣ Unit tests
       - name: Run tests
         run: flutter test --no-pub
 
-      # 7️⃣ Build Android APK
+      # 🔟 Build Android release APK
       - name: Build Android release APK
         run: flutter build apk --release
 
-      # 8️⃣ Upload APK artifact
+      # 1️⃣1️⃣ Upload APK artifact
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
           name: flutter-apk-release
           path: build/app/outputs/flutter-apk/app-release.apk
 
-      # 9️⃣ Build Flutter Web release
+      # 1️⃣2️⃣ Build Flutter Web release
       - name: Build Flutter Web
         run: flutter build web --release --base-href="/"
 
-      # 🔟 Upload Web build as artifact
+      # 1️⃣3️⃣ Upload Web build artifact
       - name: Upload Web build
         uses: actions/upload-artifact@v4
         with:
           name: flutter-web-release
           path: build/web
 
-      # 1️⃣1️⃣ Deploy to Firebase Hosting
+      # 1️⃣4️⃣ Cache Firebase CLI
+      - name: Cache Firebase CLI
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/firebase
+          key: ${{ runner.os }}-firebase-cli
+          restore-keys: |
+            ${{ runner.os }}-firebase-cli
+
+      # 1️⃣5️⃣ Deploy to Firebase Hosting
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          channelId: live     # use "preview" for PR previews
+          channelId: live
           projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
+          entryPoint: .
