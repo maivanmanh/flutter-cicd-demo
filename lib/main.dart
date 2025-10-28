@@ -11,14 +11,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'MVM Flutter CICD Example',
-      theme: ThemeData(
-        useMaterial3: false
-      ),
+      theme: ThemeData(useMaterial3: false),
       home: MyHomePage(),
     );
   }
 }
-
 
 class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key});
@@ -62,10 +59,8 @@ class MyHomePage extends StatelessWidget {
       appBar: AppBar(title: const Text('List View Example')),
       body: ListView.separated(
         itemCount: students.length,
-        separatorBuilder: (context, index) => const Divider(
-          color: Colors.grey,
-          height: 1,
-        ),
+        separatorBuilder: (context, index) =>
+            const Divider(color: Colors.grey, height: 1),
         itemBuilder: (context, index) {
           return ListTile(
             leading: CircleAvatar(
@@ -75,8 +70,8 @@ class MyHomePage extends StatelessWidget {
               ),
             ),
             title: Text(students[index]),
-            subtitle: Text('Student #${index + 1}'),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            subtitle: Text('Student ${index + 1}'),
+            trailing: const Icon(Icons.more_vert, size: 16),
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('You selected ${students[index]}')),
