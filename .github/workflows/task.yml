@@ -65,11 +65,11 @@ jobs:
           name: flutter-web-release
           path: build/web
 
-      # # 1️⃣1️⃣ Deploy to Firebase Hosting
-      # - name: Deploy to Firebase Hosting
-      #   uses: FirebaseExtended/action-hosting-deploy@v0
-      #   with:
-      #     repoToken: ${{ secrets.GITHUB_TOKEN }}
-      #     firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-      #     channelId: live     # use "preview" for PR previews
-      #     projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
+      # 1️⃣1️⃣ Deploy to Firebase Hosting
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          channelId: live     # use "preview" for PR previews
+          projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
