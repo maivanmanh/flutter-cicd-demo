@@ -56,7 +56,7 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('List View Example')),
+      appBar: AppBar(title: const Text('My Student List')),
       body: ListView.separated(
         itemCount: students.length,
         separatorBuilder: (context, index) =>
@@ -70,7 +70,7 @@ class MyHomePage extends StatelessWidget {
               ),
             ),
             title: Text(students[index]),
-            subtitle: Text('Student ${index + 1}'),
+            subtitle: Text('${students[index]}@student.tdtu.edu.vn'),
             trailing: const Icon(Icons.more_vert, size: 16),
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
